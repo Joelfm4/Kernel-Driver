@@ -2,6 +2,8 @@
 
 
 int main() {
-	std::cout << "Hello" << '\n';
+
+	// CODE GOES HERE
+
 	return 0;
 }
