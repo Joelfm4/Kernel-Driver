@@ -33,6 +33,9 @@ void DebugPrint(PCSTR text) {
 NTSTATUS Create(PDEVICE_OBJECT device_object, PIRP irp) {
 	UNREFERENCED_PARAMETER(device_object);
 
+	irp->IoStatus.Status = STATUS_SUCCESS;
+	irp->IoStatus.Information = 0;
+
 	IoCompleteRequest(irp, IO_NO_INCREMENT);
 
 	return irp->IoStatus.Status;
@@ -40,6 +43,9 @@ NTSTATUS Create(PDEVICE_OBJECT device_object, PIRP irp) {
 
 NTSTATUS Close(PDEVICE_OBJECT device_object, PIRP irp) {
 	UNREFERENCED_PARAMETER(device_object);
+
+	irp->IoStatus.Status = STATUS_SUCCESS;
+	irp->IoStatus.Information = 0;
 
 	IoCompleteRequest(irp, IO_NO_INCREMENT);
 
