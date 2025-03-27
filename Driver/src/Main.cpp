@@ -29,7 +29,11 @@ void DebugPrint(PCSTR text) {
 	KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, text));
 }
 
+// Forward declaration for suppressing code analysis warnings.
+DRIVER_INITIALIZE DriverEntry;
 
+
+// IRP Major Functions
 NTSTATUS Create(PDEVICE_OBJECT device_object, PIRP irp) {
 	UNREFERENCED_PARAMETER(device_object);
 
@@ -52,6 +56,8 @@ NTSTATUS Close(PDEVICE_OBJECT device_object, PIRP irp) {
 	return irp->IoStatus.Status;
 }
 
+
+// Device Control
 NTSTATUS DeviceControl(PDEVICE_OBJECT device_object, PIRP irp) {
 	UNREFERENCED_PARAMETER(device_object);
 
@@ -106,9 +112,6 @@ NTSTATUS DeviceControl(PDEVICE_OBJECT device_object, PIRP irp) {
 }
 
 
-// Forward declaration for suppressing code analysis warnings.
-DRIVER_INITIALIZE DriverEntry;
-
 UNICODE_STRING device_name = {};
 UNICODE_STRING symbolic_link = {};
 
@@ -158,7 +161,6 @@ NTSTATUS DriverMain(IN PDRIVER_OBJECT driver_object, IN PUNICODE_STRING registry
 	driver_object->MajorFunction[IRP_MJ_CREATE] = Create;
 	driver_object->MajorFunction[IRP_MJ_CLOSE] = Close;
 	driver_object->MajorFunction[IRP_MJ_DEVICE_CONTROL] = DeviceControl;
-
 	driver_object->DriverUnload = DriverUnload;
 
 	ClearFlag(device_object->Flags, DO_DEVICE_INITIALIZING);

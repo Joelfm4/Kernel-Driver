@@ -7,7 +7,6 @@
 
 #pragma once
 
-
 class MemoryManager {
 private:
 	HANDLE driver_handle;
@@ -32,30 +31,6 @@ public:
 		r.process_id = reinterpret_cast<HANDLE>(pid);
 
 		return DeviceIoControl(driver_handle, Driver::Codes::attach, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
-	}
-
-	template <class T>
-	T ReadMemory(const std::uintptr_t addr) {
-		T Temp = {};
-
-		Driver::Request r;
-		r.target = reinterpret_cast<PVOID>(addr);
-		r.buffer = &Temp;
-		r.size = sizeof(T);
-
-		DeviceIoControl(driver_handle, Driver::Codes::read, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
-
-		return Temp;
-	}
-
-	template <class T>
-	void WriteMemory(const std::uintptr_t addr, const T& value) {
-		Driver::Request r;
-		r.target = reinterpret_cast<PVOID>(addr);
-		r.buffer = (PVOID)&value;
-		r.size = sizeof(T);
-
-		DeviceIoControl(driver_handle, Driver::Codes::write, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
 	}
 
 	static DWORD GetProcessID(const wchar_t* process_name) {
@@ -111,6 +86,30 @@ public:
 		CloseHandle(snapshot);
 
 		return module_base;
+	}
+
+	template <class T>
+	T ReadMemory(const std::uintptr_t addr) {
+		T Temp = {};
+
+		Driver::Request r;
+		r.target = reinterpret_cast<PVOID>(addr);
+		r.buffer = &Temp;
+		r.size = sizeof(T);
+
+		DeviceIoControl(driver_handle, Driver::Codes::read, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+
+		return Temp;
+	}
+
+	template <class T>
+	void WriteMemory(const std::uintptr_t addr, const T& value) {
+		Driver::Request r;
+		r.target = reinterpret_cast<PVOID>(addr);
+		r.buffer = (PVOID)&value;
+		r.size = sizeof(T);
+
+		DeviceIoControl(driver_handle, Driver::Codes::write, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
 	}
 
 };

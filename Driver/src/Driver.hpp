@@ -14,6 +14,7 @@ namespace Driver {
 
 
 namespace Driver::Codes {
+
 	// IOCTL (I/O Control) Codes
 	constexpr ULONG attach = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x800, METHOD_BUFFERED, FILE_SPECIAL_ACCESS);
 	constexpr ULONG read = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_SPECIAL_ACCESS);
