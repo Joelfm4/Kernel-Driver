@@ -56,8 +56,6 @@ NTSTATUS Close(PDEVICE_OBJECT device_object, PIRP irp) {
 	return irp->IoStatus.Status;
 }
 
-
-// Device Control
 NTSTATUS DeviceControl(PDEVICE_OBJECT device_object, PIRP irp) {
 	UNREFERENCED_PARAMETER(device_object);
 
@@ -80,7 +78,9 @@ NTSTATUS DeviceControl(PDEVICE_OBJECT device_object, PIRP irp) {
 	static PEPROCESS target_process = nullptr;
 
 	const ULONG control_code = stack_irp->Parameters.DeviceIoControl.IoControlCode;
+
 	switch (control_code) {
+
 	case Driver::Codes::attach:
 		status = PsLookupProcessByProcessId(request->process_id, &target_process);
 		break;
@@ -157,7 +157,7 @@ NTSTATUS DriverMain(IN PDRIVER_OBJECT driver_object, IN PUNICODE_STRING registry
 	// Enable buffered I/O for efficient small data transfers between UM and KM.
 	SetFlag(device_object->Flags, DO_BUFFERED_IO);
 
-	// Set-up the driver handlers
+	// Set-up the driver handles
 	driver_object->MajorFunction[IRP_MJ_CREATE] = Create;
 	driver_object->MajorFunction[IRP_MJ_CLOSE] = Close;
 	driver_object->MajorFunction[IRP_MJ_DEVICE_CONTROL] = DeviceControl;

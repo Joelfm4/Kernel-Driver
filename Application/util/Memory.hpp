@@ -9,10 +9,10 @@
 
 class MemoryManager {
 private:
-	HANDLE driver_handle;
+	HANDLE m_driver_handle;
 
 public:
-	explicit MemoryManager(HANDLE DriverHandle) : driver_handle(DriverHandle) {}
+	explicit MemoryManager(HANDLE DriverHandle) : m_driver_handle(DriverHandle) {}
 
 	struct ModuleData {
 		HMODULE module;
@@ -21,8 +21,8 @@ public:
 	};
 
 	~MemoryManager() {
-		if (driver_handle) {
-			CloseHandle(driver_handle);
+		if (m_driver_handle) {
+			CloseHandle(m_driver_handle);
 		}
 	};
 
@@ -30,7 +30,7 @@ public:
 		Driver::Request r;
 		r.process_id = reinterpret_cast<HANDLE>(pid);
 
-		return DeviceIoControl(driver_handle, Driver::Codes::attach, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+		return DeviceIoControl(m_driver_handle, Driver::Codes::attach, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
 	}
 
 	static DWORD GetProcessID(const wchar_t* process_name) {
@@ -97,7 +97,7 @@ public:
 		r.buffer = &Temp;
 		r.size = sizeof(T);
 
-		DeviceIoControl(driver_handle, Driver::Codes::read, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+		DeviceIoControl(m_driver_handle, Driver::Codes::read, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
 
 		return Temp;
 	}
@@ -109,7 +109,7 @@ public:
 		r.buffer = (PVOID)&value;
 		r.size = sizeof(T);
 
-		DeviceIoControl(driver_handle, Driver::Codes::write, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+		DeviceIoControl(m_driver_handle, Driver::Codes::write, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
 	}
 
 };
