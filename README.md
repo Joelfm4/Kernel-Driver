@@ -93,3 +93,6 @@ The driver responds to the following control codes:
 
 **Note**: DriverEntry returns to DriverMain because KDMapper manually maps the driver into memory. Since the operating system is unaware of the driver being loaded (as it was injected manually by KDMapper), it does not pass the DriverObject and RegistryPath parameters to the driver, which would normally be provided during a typical driver load process.
 
+> [!WARNING]
+> The driver is still under development and may not be fully stable. Use with caution.
+
