@@ -2,7 +2,7 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 
-#include "../util/Memory.hpp"
+#include "../util/Memory.h"
 
 int main() {
 	// Attach Driver

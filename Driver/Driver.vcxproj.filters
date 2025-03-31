@@ -29,7 +29,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Driver.hpp">
+    <ClInclude Include="src\Driver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

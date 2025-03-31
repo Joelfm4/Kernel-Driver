@@ -1,11 +1,9 @@
-#include <iostream>
+#pragma once
 
+#include <iostream>
 #include <Windows.h>
 #include <TlHelp32.h>
-
-#include "../../Driver/src/Driver.hpp"
-
-#pragma once
+#include "../../Driver/src/Driver.h"
 
 class MemoryManager {
 private:

@@ -1,6 +1,5 @@
 #pragma once
 
-
 namespace Driver {
 	struct Request {
 		HANDLE process_id;
@@ -11,7 +10,6 @@ namespace Driver {
 	};
 
 }
-
 
 namespace Driver::Codes {
 
