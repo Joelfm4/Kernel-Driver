@@ -57,7 +57,7 @@ public:
 		return process_id;
 	}
 
-	static std::uintptr_t GetModuleBase(const DWORD PID, const wchar_t* module_name) {
+	static std::uintptr_t GetModuleBase(const DWORD pid, const wchar_t* module_name) {
 		std::uintptr_t module_base = 0;
 
 		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, NULL);
@@ -65,17 +65,17 @@ public:
 			return module_base;
 		}
 
-		MODULEENTRY32W Entry = {};
-		Entry.dwSize = sizeof(decltype(Entry));
+		MODULEENTRY32W entry = {};
+		entry.dwSize = sizeof(decltype(entry));
 
-		if (Module32FirstW(snapshot, &Entry) == TRUE) {
-			if (wcsstr(module_name, Entry.szModule) != nullptr) {
-				module_base = reinterpret_cast<std::uintptr_t>(Entry.modBaseAddr);
+		if (Module32FirstW(snapshot, &entry) == TRUE) {
+			if (wcsstr(module_name, entry.szModule) != nullptr) {
+				module_base = reinterpret_cast<std::uintptr_t>(entry.modBaseAddr);
 			}
 			else {
-				while (Module32NextW(snapshot, &Entry) == TRUE) {
-					if (wcsstr(module_name, Entry.szModule) != nullptr) {
-						module_base = reinterpret_cast<std::uintptr_t>(Entry.modBaseAddr);
+				while (Module32NextW(snapshot, &entry) == TRUE) {
+					if (wcsstr(module_name, entry.szModule) != nullptr) {
+						module_base = reinterpret_cast<std::uintptr_t>(entry.modBaseAddr);
 						break;
 					}
 				}
@@ -88,16 +88,16 @@ public:
 
 	template <class T>
 	T ReadMemory(const std::uintptr_t addr) {
-		T Temp = {};
+		T temp = {};
 
 		Driver::Request r;
 		r.target = reinterpret_cast<PVOID>(addr);
-		r.buffer = &Temp;
+		r.buffer = &temp;
 		r.size = sizeof(T);
 
 		DeviceIoControl(m_driver_handle, Driver::Codes::read, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
 
-		return Temp;
+		return temp;
 	}
 
 	template <class T>
