@@ -60,7 +60,7 @@ public:
 	static std::uintptr_t GetModuleBase(const DWORD pid, const wchar_t* module_name) {
 		std::uintptr_t module_base = 0;
 
-		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, NULL);
+		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid);
 		if (snapshot == INVALID_HANDLE_VALUE) {
 			return module_base;
 		}
