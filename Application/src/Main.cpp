@@ -14,9 +14,9 @@ int main() {
 		return 1;
 	}
 
-	MemoryManager MemoryClass(driver_handle);
+	MemoryManager Memory(driver_handle);
 
-	const DWORD pid = MemoryClass.GetProcessID(L"PROCESS.exe");
+	const DWORD pid = Memory.GetProcessID(L"PROCESS.exe");
 
 	if (pid == 0) {
 		std::cout << "[-] Failed to find process." << '\n';
@@ -24,10 +24,10 @@ int main() {
 		return 1;
 	}
 
-	if (MemoryClass.AttachToProcess(pid) == true) {
+	if (Memory.AttachToProcess(pid) == true) {
 		std::cout << "Attachment successful." << '\n';
 
-		const std::uintptr_t client = MemoryClass.GetModuleBase(pid, L"client.dll");
+		const std::uintptr_t client = Memory.GetModuleBase(pid, L"client.dll");
 
 		if (client != 0) {
 			std::cout << "client found." << '\n';
