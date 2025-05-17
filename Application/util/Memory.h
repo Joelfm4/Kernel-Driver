@@ -60,7 +60,7 @@ public:
 	static std::uintptr_t GetModuleBase(const DWORD pid, const wchar_t* module_name) {
 		std::uintptr_t module_base = 0;
 
-		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, pid);
+		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, NULL);
 		if (snapshot == INVALID_HANDLE_VALUE) {
 			return module_base;
 		}
@@ -84,6 +84,23 @@ public:
 		CloseHandle(snapshot);
 
 		return module_base;
+	}
+
+	static bool InForeground(const std::string& window_name) {
+		HWND current = GetForegroundWindow();
+
+		if (!current) return false;
+
+		char title[256];
+		GetWindowTextA(current, title, sizeof(title));
+
+		if (strstr(title, window_name.c_str()) != nullptr) return true;
+
+		return false;
+	}
+
+	static bool ProcessIsOpen(const wchar_t* process_name){
+		return GetProcessID(process_name) != 0;
 	}
 
 	template <class T>
@@ -111,4 +128,3 @@ public:
 	}
 
 };
-
