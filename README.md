@@ -71,10 +71,9 @@ To download the source code:
 #### Process flow to read/write memory from a process:
 1. Attach the driver.
 2. Instantiate `MemoryManager` class
-3. Get the Process ID (PID) of the target process.
-4. Attach process to the Driver.
-5. Obtain the base address of the target module (e.g `client.dll`).
-6. Use the `ReadMemory` and `WriteMemory` methods from `MemoryManager` class to read and write memory.
+3. Obtain the base address of the target module (e.g `client.dll`).
+4. Use the `ReadMemory` and `WriteMemory` methods from `MemoryManager` class to read and write memory.
+- **TODO**
 
 ## Memory Management Class (`memory.hpp`)
 - `ReadMemory` Method to read memory from a process.
@@ -82,6 +81,7 @@ To download the source code:
 - `AttachToProcess` Method responsible to attach the driver to a process.
 - `GetProcessID` Method responsible to get the process ID (PID) of a given process.
 - `GetModuleBase` Method responsible to get the base module of a given process.
+- **TODO**
 
 ## IOCTL Codes (Driver.hpp)
 The driver responds to the following control codes:
@@ -90,8 +90,6 @@ The driver responds to the following control codes:
 - `write`: Writes memory to the target process.
   
 ---
-
-**Note**: DriverEntry returns to DriverMain because KDMapper manually maps the driver into memory. Since the operating system is unaware of the driver being loaded (as it was injected manually by KDMapper), it does not pass the DriverObject and RegistryPath parameters to the driver, which would normally be provided during a typical driver load process.
 
 > [!WARNING]
 > The driver is still under development and may not be fully stable. Use with caution.
