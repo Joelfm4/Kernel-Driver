@@ -128,9 +128,8 @@ void DriverUnload(IN PDRIVER_OBJECT device_object) {
 NTSTATUS DriverMain(IN PDRIVER_OBJECT driver_object, IN PUNICODE_STRING registry_path) {
 	UNREFERENCED_PARAMETER(registry_path);
 
-	RtlInitUnicodeString(&device_name, L"\\Device\\Driver"); // Device
+	RtlInitUnicodeString(&device_name, L"\\Device\\Driver");
 
-	// Create driver device object
 	PDEVICE_OBJECT device_object = nullptr;
 	NTSTATUS status = IoCreateDevice(driver_object, 0, &device_name, FILE_DEVICE_UNKNOWN,
 		FILE_DEVICE_SECURE_OPEN, FALSE, &device_object);
@@ -144,7 +143,7 @@ NTSTATUS DriverMain(IN PDRIVER_OBJECT driver_object, IN PUNICODE_STRING registry
 	DebugPrint("[+] Driver device successfully created.\n");
 
 	// Establish Symbolic link
-	RtlInitUnicodeString(&symbolic_link, L"\\DosDevices\\Driver"); // DosDevices
+	RtlInitUnicodeString(&symbolic_link, L"\\DosDevices\\Driver");
 
 	status = IoCreateSymbolicLink(&symbolic_link, &device_name);
 	if (status != STATUS_SUCCESS) {
@@ -154,7 +153,6 @@ NTSTATUS DriverMain(IN PDRIVER_OBJECT driver_object, IN PUNICODE_STRING registry
 
 	DebugPrint("[+] Driver symbolic link successfully established.\n");
 
-	// Enable buffered I/O for efficient small data transfers between UM and KM.
 	SetFlag(device_object->Flags, DO_BUFFERED_IO);
 
 	// Set-up the driver handles

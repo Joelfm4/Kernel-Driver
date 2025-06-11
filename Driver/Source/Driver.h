@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DRIVER
+#define DRIVER
 
 namespace Driver {
 	struct Request {
@@ -18,3 +19,5 @@ namespace Driver::Codes {
 	constexpr ULONG read = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x801, METHOD_BUFFERED, FILE_SPECIAL_ACCESS);
 	constexpr ULONG write = CTL_CODE(FILE_DEVICE_UNKNOWN, 0x802, METHOD_BUFFERED, FILE_SPECIAL_ACCESS);
 }
+
+#endif // !DRIVER
