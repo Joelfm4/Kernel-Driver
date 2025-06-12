@@ -1,24 +1,28 @@
-#include <iostream>
 #include <Windows.h>
 #include <TlHelp32.h>
+#include <cstdint>
+#include <fstream>
+#include <iostream>
 
-#include "Util/Memory.h"
-
+#include "Memory/Memory.h"
+#include "Logger/Logger.h"
 
 
 int main() {
+	MemoryManager Memory(L"ProcessName.exe");
 
-	MemoryManager Memory(L"cs2.exe");
+	if (!Memory.IsAttached()) Log::Error("Failed to attach to process");
 
-	// TODO: Base Code
-	if (Memory.IsAttached()) {
+	const std::uintptr_t Client = Memory.GetModuleBase(L"ModuleName.dll");
 
-		const std::uintptr_t client = Memory.GetModuleBase(L"client.dll");
+	if (Client == 0) Log::Error("Client not found");
+	Log::Fine("Client found");
 
-		if (client != 0) {
-			// Client Found
-		}
-	}
+
+	// #############################################################################################
+	//                                         Main Loop
+	// #############################################################################################
+
 
 	return 0;
 }

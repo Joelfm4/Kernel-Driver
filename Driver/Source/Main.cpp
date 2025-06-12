@@ -4,29 +4,29 @@
 
 extern "C" {
 	NTKERNELAPI NTSTATUS IoCreateDriver(
-		PUNICODE_STRING driver_name,
-		PDRIVER_INITIALIZE initialization_function
+		PUNICODE_STRING DriverName,
+		PDRIVER_INITIALIZE InitializationFunction
 	);
 
 	// Copies virtual memory between processes.
 	NTKERNELAPI NTSTATUS MmCopyVirtualMemory(
-		PEPROCESS source_process,
-		PVOID source_address,
-		PEPROCESS target_process,
-		PVOID target_address,
-		SIZE_T buffer_size,
-		KPROCESSOR_MODE previous_mode,
-		PSIZE_T return_size
+		PEPROCESS SourceProcess,
+		PVOID SourceAddress,
+		PEPROCESS TargetProcess,
+		PVOID TargetAddress,
+		SIZE_T BufferSize,
+		KPROCESSOR_MODE PreviousMode,
+		PSIZE_T ReturnSize
 	);
 }
 
 
-void DebugPrint(PCSTR text) {
+void DebugPrint(PCSTR Text) {
 #ifndef DEBUG
-	UNREFERENCED_PARAMETER(text);
+	UNREFERENCED_PARAMETER(Text);
 #endif // DEBUG
 
-	KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, text));
+	KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, Text));
 }
 
 // Forward declaration for suppressing code analysis warnings.
@@ -34,137 +34,134 @@ DRIVER_INITIALIZE DriverEntry;
 
 
 // IRP Major Functions
-NTSTATUS Create(PDEVICE_OBJECT device_object, PIRP irp) {
-	UNREFERENCED_PARAMETER(device_object);
+NTSTATUS Create(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+	UNREFERENCED_PARAMETER(DeviceObject);
 
-	irp->IoStatus.Status = STATUS_SUCCESS;
-	irp->IoStatus.Information = 0;
+	Irp->IoStatus.Status = STATUS_SUCCESS;
+	Irp->IoStatus.Information = 0;
 
-	IoCompleteRequest(irp, IO_NO_INCREMENT);
+	IoCompleteRequest(Irp, IO_NO_INCREMENT);
 
-	return irp->IoStatus.Status;
+	return Irp->IoStatus.Status;
 }
 
-NTSTATUS Close(PDEVICE_OBJECT device_object, PIRP irp) {
-	UNREFERENCED_PARAMETER(device_object);
+NTSTATUS Close(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+	UNREFERENCED_PARAMETER(DeviceObject);
 
-	irp->IoStatus.Status = STATUS_SUCCESS;
-	irp->IoStatus.Information = 0;
+	Irp->IoStatus.Status = STATUS_SUCCESS;
+	Irp->IoStatus.Information = 0;
 
-	IoCompleteRequest(irp, IO_NO_INCREMENT);
+	IoCompleteRequest(Irp, IO_NO_INCREMENT);
 
-	return irp->IoStatus.Status;
+	return Irp->IoStatus.Status;
 }
 
-NTSTATUS DeviceControl(PDEVICE_OBJECT device_object, PIRP irp) {
-	UNREFERENCED_PARAMETER(device_object);
+NTSTATUS DeviceControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
+	UNREFERENCED_PARAMETER(DeviceObject);
 
 	DebugPrint("[+] Device control called.\n");
 
-	NTSTATUS status = STATUS_UNSUCCESSFUL;
+	NTSTATUS Status = STATUS_UNSUCCESSFUL;
 
 	// Stack location of I/O Request Packet (IRP) - Determine which code was passed
-	PIO_STACK_LOCATION stack_irp = IoGetCurrentIrpStackLocation(irp);
+	PIO_STACK_LOCATION StackIrp = IoGetCurrentIrpStackLocation(Irp);
 
-	// Request object sent from the user
-	auto request = reinterpret_cast<Driver::Request*>(irp->AssociatedIrp.SystemBuffer);
+	auto Request = reinterpret_cast<Driver::Request*>(Irp->AssociatedIrp.SystemBuffer);
 
-	if (stack_irp == nullptr || request == nullptr) {
-		IoCompleteRequest(irp, IO_NO_INCREMENT);
-		return status;
+	if (StackIrp == nullptr || Request == nullptr) {
+		IoCompleteRequest(Irp, IO_NO_INCREMENT);
+		return Status;
 	}
 
-	// Target Process
-	static PEPROCESS target_process = nullptr;
+	static PEPROCESS TargetProcess = nullptr;
 
-	const ULONG control_code = stack_irp->Parameters.DeviceIoControl.IoControlCode;
+	const ULONG control_code = StackIrp->Parameters.DeviceIoControl.IoControlCode;
 
 	switch (control_code) {
 
 	case Driver::Codes::attach:
-		status = PsLookupProcessByProcessId(request->process_id, &target_process);
+		Status = PsLookupProcessByProcessId(Request->process_id, &TargetProcess);
 		break;
 
 	case Driver::Codes::read:
-		if (target_process != nullptr)
-			status = MmCopyVirtualMemory(target_process, request->target,
-				PsGetCurrentProcess(), request->buffer,
-				request->size, KernelMode, &request->return_size);
+		if (TargetProcess != nullptr)
+			Status = MmCopyVirtualMemory(TargetProcess, Request->target,
+				PsGetCurrentProcess(), Request->buffer,
+				Request->size, KernelMode, &Request->return_size);
 		break;
 
 	case Driver::Codes::write:
-		if (target_process != nullptr)
-			status = MmCopyVirtualMemory(PsGetCurrentProcess(), request->buffer,
-				target_process, request->target,
-				request->size, KernelMode, &request->return_size);
+		if (TargetProcess != nullptr)
+			Status = MmCopyVirtualMemory(PsGetCurrentProcess(), Request->buffer,
+				TargetProcess, Request->target,
+				Request->size, KernelMode, &Request->return_size);
 		break;
 
 	default:
 		break;
 	}
 
-	irp->IoStatus.Status = status;
-	irp->IoStatus.Information = sizeof(Driver::Request);
+	Irp->IoStatus.Status = Status;
+	Irp->IoStatus.Information = sizeof(Driver::Request);
 
-	IoCompleteRequest(irp, IO_NO_INCREMENT);
+	IoCompleteRequest(Irp, IO_NO_INCREMENT);
 
-	return status;
+	return Status;
 }
 
 
-UNICODE_STRING device_name = {};
-UNICODE_STRING symbolic_link = {};
+UNICODE_STRING DeviceName = {};
+UNICODE_STRING SymbolicLink = {};
 
 
-void DriverUnload(IN PDRIVER_OBJECT device_object) {
+void DriverUnload(IN PDRIVER_OBJECT DeviceObject) {
 
-	IoDeleteSymbolicLink(&symbolic_link);
-	IoDeleteDevice(device_object->DeviceObject);
+	IoDeleteSymbolicLink(&SymbolicLink);
+	IoDeleteDevice(DeviceObject->DeviceObject);
 
 	DebugPrint("[+] Driver unloaded successfully.\n");
 
 }
 
-NTSTATUS DriverMain(IN PDRIVER_OBJECT driver_object, IN PUNICODE_STRING registry_path) {
-	UNREFERENCED_PARAMETER(registry_path);
+NTSTATUS DriverMain(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath) {
+	UNREFERENCED_PARAMETER(RegistryPath);
 
-	RtlInitUnicodeString(&device_name, L"\\Device\\Driver");
+	RtlInitUnicodeString(&DeviceName, L"\\Device\\Driver");
 
-	PDEVICE_OBJECT device_object = nullptr;
-	NTSTATUS status = IoCreateDevice(driver_object, 0, &device_name, FILE_DEVICE_UNKNOWN,
-		FILE_DEVICE_SECURE_OPEN, FALSE, &device_object);
+	PDEVICE_OBJECT DeviceObject = nullptr;
+	NTSTATUS Status = IoCreateDevice(DriverObject, 0, &DeviceName, FILE_DEVICE_UNKNOWN,
+		FILE_DEVICE_SECURE_OPEN, FALSE, &DeviceObject);
 
-	if (status != STATUS_SUCCESS) {
+	if (Status != STATUS_SUCCESS) {
 		DebugPrint("[-] Failed to create driver device.\n");
 
-		return status;
+		return Status;
 	}
 
 	DebugPrint("[+] Driver device successfully created.\n");
 
-	// Establish Symbolic link
-	RtlInitUnicodeString(&symbolic_link, L"\\DosDevices\\Driver");
+	RtlInitUnicodeString(&SymbolicLink, L"\\DosDevices\\Driver");
 
-	status = IoCreateSymbolicLink(&symbolic_link, &device_name);
-	if (status != STATUS_SUCCESS) {
+	Status = IoCreateSymbolicLink(&SymbolicLink, &DeviceName);
+	if (Status != STATUS_SUCCESS) {
 		DebugPrint("[-] Failed to establish symbolic link.\n");
-		return status;
+		return Status;
 	}
 
 	DebugPrint("[+] Driver symbolic link successfully established.\n");
 
-	SetFlag(device_object->Flags, DO_BUFFERED_IO);
+	SetFlag(DeviceObject->Flags, DO_BUFFERED_IO);
 
 	// Set-up the driver handles
-	driver_object->MajorFunction[IRP_MJ_CREATE] = Create;
-	driver_object->MajorFunction[IRP_MJ_CLOSE] = Close;
-	driver_object->MajorFunction[IRP_MJ_DEVICE_CONTROL] = DeviceControl;
-	driver_object->DriverUnload = DriverUnload;
+	DriverObject->MajorFunction[IRP_MJ_CREATE] = Create;
+	DriverObject->MajorFunction[IRP_MJ_CLOSE] = Close;
+	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = DeviceControl;
+	DriverObject->DriverUnload = DriverUnload;
 
-	ClearFlag(device_object->Flags, DO_DEVICE_INITIALIZING);
+	ClearFlag(DeviceObject->Flags, DO_DEVICE_INITIALIZING);
 	DebugPrint("[+] Driver initialized successfully.\n");
 
-	return status;
+	return Status;
 }
 
 NTSTATUS DriverEntry() {

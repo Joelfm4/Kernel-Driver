@@ -2,8 +2,7 @@
 #define MEMORY
 
 #include "../../../Driver/Source/Driver.h"
-
-// TODO: Improve
+#include "../Logger/Logger.h"
 
 class MemoryManager {
 private:
@@ -15,22 +14,23 @@ public:
 	MemoryManager(const wchar_t* ProcessName) {
 		m_KernelDriver = CreateFileW(L"\\\\.\\Driver", GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-		if (m_KernelDriver == INVALID_HANDLE_VALUE) throw std::runtime_error("[-] Failed to create drive handle");
+		if (m_KernelDriver == INVALID_HANDLE_VALUE) Log::Error("Failed to create drive handle");
 
 		m_ProcessID = GetProcessID(ProcessName);
 
 		if (m_ProcessID == 0) {
 			CloseHandle(m_KernelDriver);
-			throw std::runtime_error("[-] Failed to find process");
+			Log::Error("Failed to find process");
 		}
+		Log::Fine("Process found");
 
 		if (!AttachToProcess(m_ProcessID)) {
 			CloseHandle(m_KernelDriver);
-			throw std::runtime_error("[-] Failed to attach to process");
+			Log::Error("Failed to attach driver to process");
 		}
+		Log::Fine("Driver successfully attached to process");
 
 		m_IsAttached = true;
-
 	};
 
 	~MemoryManager() {
@@ -41,13 +41,6 @@ public:
 
 	MemoryManager(const MemoryManager&) = delete;
 	MemoryManager& operator=(const MemoryManager&) = delete;
-
-	struct ModuleData {
-		HMODULE module;
-		DWORD_PTR base;
-		uintptr_t size;
-	};
-
 
 	bool IsAttached() const {
 		return m_IsAttached;
@@ -105,9 +98,8 @@ public:
 		Entry.dwSize = sizeof(decltype(Entry));
 
 		if (Module32FirstW(Snapshot, &Entry) == TRUE) {
-			if (wcsstr(ModuleName, Entry.szModule) != nullptr) {
-				ModuleBase = reinterpret_cast<std::uintptr_t>(Entry.modBaseAddr);
-			}
+			if (wcsstr(ModuleName, Entry.szModule) != nullptr) ModuleBase = reinterpret_cast<std::uintptr_t>(Entry.modBaseAddr);
+
 			else {
 				while (Module32NextW(Snapshot, &Entry) == TRUE) {
 					if (wcsstr(ModuleName, Entry.szModule) != nullptr) {
@@ -117,11 +109,11 @@ public:
 				}
 			}
 		}
+
 		CloseHandle(Snapshot);
 
 		return ModuleBase;
 	}
-
 
 	bool InForeground(const std::string& WindowName) {
 		HWND Current = GetForegroundWindow();
