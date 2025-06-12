@@ -79,22 +79,22 @@ NTSTATUS DeviceControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
 	switch (control_code) {
 
-	case Driver::Codes::attach:
-		Status = PsLookupProcessByProcessId(Request->process_id, &TargetProcess);
+	case Driver::Codes::Attach:
+		Status = PsLookupProcessByProcessId(Request->ProcessID, &TargetProcess);
 		break;
 
-	case Driver::Codes::read:
+	case Driver::Codes::Read:
 		if (TargetProcess != nullptr)
-			Status = MmCopyVirtualMemory(TargetProcess, Request->target,
-				PsGetCurrentProcess(), Request->buffer,
-				Request->size, KernelMode, &Request->return_size);
+			Status = MmCopyVirtualMemory(TargetProcess, Request->Target,
+				PsGetCurrentProcess(), Request->Buffer,
+				Request->Size, KernelMode, &Request->ReturnSize);
 		break;
 
-	case Driver::Codes::write:
+	case Driver::Codes::Write:
 		if (TargetProcess != nullptr)
-			Status = MmCopyVirtualMemory(PsGetCurrentProcess(), Request->buffer,
-				TargetProcess, Request->target,
-				Request->size, KernelMode, &Request->return_size);
+			Status = MmCopyVirtualMemory(PsGetCurrentProcess(), Request->Buffer,
+				TargetProcess, Request->Target,
+				Request->Size, KernelMode, &Request->ReturnSize);
 		break;
 
 	default:
@@ -168,7 +168,7 @@ NTSTATUS DriverEntry() {
 	DebugPrint("[+] Debuging ... \n");
 
 	UNICODE_STRING DriverName = {};
-	RtlInitUnicodeString(&DriverName, L"\\Driver\\Driver"); // Driver
+	RtlInitUnicodeString(&DriverName, L"\\Driver\\Driver");
 
 	return IoCreateDriver(&DriverName, &DriverMain);
 }

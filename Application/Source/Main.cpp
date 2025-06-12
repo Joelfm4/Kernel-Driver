@@ -1,7 +1,5 @@
 #include <Windows.h>
 #include <TlHelp32.h>
-#include <cstdint>
-#include <fstream>
 #include <iostream>
 
 #include "Memory/Memory.h"
@@ -22,6 +20,7 @@ int main() {
 	// #############################################################################################
 	//                                         Main Loop
 	// #############################################################################################
+
 
 
 	return 0;

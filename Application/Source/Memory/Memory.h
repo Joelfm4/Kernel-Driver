@@ -53,9 +53,9 @@ public:
 
 	bool AttachToProcess(const DWORD PID) {
 		Driver::Request r;
-		r.process_id = reinterpret_cast<HANDLE>(PID);
+		r.ProcessID = reinterpret_cast<HANDLE>(PID);
 
-		return DeviceIoControl(m_KernelDriver, Driver::Codes::attach, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+		return DeviceIoControl(m_KernelDriver, Driver::Codes::Attach, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
 	}
 
 
@@ -140,11 +140,11 @@ public:
 		T temp = {};
 
 		Driver::Request r;
-		r.target = reinterpret_cast<PVOID>(ADDR);
-		r.buffer = &temp;
-		r.size = sizeof(T);
+		r.Target = reinterpret_cast<PVOID>(ADDR);
+		r.Buffer = &temp;
+		r.Size = sizeof(T);
 
-		DeviceIoControl(m_KernelDriver, Driver::Codes::read, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+		DeviceIoControl(m_KernelDriver, Driver::Codes::Read, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
 
 		return temp;
 	}
@@ -153,11 +153,11 @@ public:
 	template <class T>
 	void WriteMemory(const std::uintptr_t ADDR, const T& Value) {
 		Driver::Request r;
-		r.target = reinterpret_cast<PVOID>(ADDR);
-		r.buffer = (PVOID)&Value;
-		r.size = sizeof(T);
+		r.Target = reinterpret_cast<PVOID>(ADDR);
+		r.Buffer = (PVOID)&Value;
+		r.Size = sizeof(T);
 
-		DeviceIoControl(m_KernelDriver, Driver::Codes::write, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+		DeviceIoControl(m_KernelDriver, Driver::Codes::Write, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
 	}
 
 };
