@@ -1,6 +1,7 @@
 #include <ntifs.h>
 #include "Driver.h"
 
+// Credits: Cazz
 
 extern "C" {
 	NTKERNELAPI NTSTATUS IoCreateDriver(
