@@ -130,7 +130,7 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Main.cpp" />
+    <ClCompile Include="Source\Driver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Driver.h" />

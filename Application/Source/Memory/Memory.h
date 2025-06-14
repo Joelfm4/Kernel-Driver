@@ -115,6 +115,7 @@ public:
 		return ModuleBase;
 	}
 
+
 	bool InForeground(const std::string& WindowName) {
 		HWND Current = GetForegroundWindow();
 
@@ -129,12 +130,6 @@ public:
 	}
 
 
-	bool IsProcessOpen(const wchar_t* ProcessName){
-		return GetProcessID(ProcessName) != 0;
-	}
-
-
-	// TODO: Verify that the operation was successful 
 	template <class T>
 	T ReadMemory(const std::uintptr_t ADDR) {
 		T temp = {};
