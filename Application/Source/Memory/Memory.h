@@ -10,6 +10,49 @@ private:
 	DWORD m_ProcessID = 0;
 	bool m_IsAttached = false;
 
+
+private:
+	DWORD GetProcessID(const wchar_t* ProcessName) {
+
+		HANDLE Snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+		if (Snapshot == INVALID_HANDLE_VALUE) {
+			return 0;
+		}
+
+		PROCESSENTRY32W Entry = {};
+		Entry.dwSize = sizeof(decltype(Entry));
+		DWORD PID = 0;
+
+		if (!Process32First(Snapshot, &Entry)) {
+			CloseHandle(Snapshot);
+			return 0;
+		}
+
+		do {
+			if (_wcsicmp(Entry.szExeFile, ProcessName) == 0) {
+				PID = Entry.th32ProcessID;
+				break;
+			}
+		} while (Process32Next(Snapshot, &Entry));
+
+		CloseHandle(Snapshot);
+		return PID;
+	}
+
+
+	bool AttachToProcess(const DWORD PID) {
+		Driver::Request r;
+		r.ProcessID = reinterpret_cast<HANDLE>(PID);
+
+		return DeviceIoControl(m_KernelDriver, Driver::Codes::Attach, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+	}
+
+
+	bool IsDriverLoaded() const {
+		return m_KernelDriver != INVALID_HANDLE_VALUE;
+	}
+
+
 public:
 	MemoryManager(const wchar_t* ProcessName) {
 		m_KernelDriver = CreateFileW(L"\\\\.\\Driver", GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
@@ -42,51 +85,13 @@ public:
 	MemoryManager(const MemoryManager&) = delete;
 	MemoryManager& operator=(const MemoryManager&) = delete;
 
+
 	bool IsAttached() const {
 		return m_IsAttached;
 	}
 
-	bool IsDriverLoaded() const {
-		return m_KernelDriver != INVALID_HANDLE_VALUE;
-	}
 
-
-	bool AttachToProcess(const DWORD PID) {
-		Driver::Request r;
-		r.ProcessID = reinterpret_cast<HANDLE>(PID);
-
-		return DeviceIoControl(m_KernelDriver, Driver::Codes::Attach, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
-	}
-
-
-	DWORD GetProcessID(const wchar_t* ProcessName) {
-
-		HANDLE Snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
-		if (Snapshot == INVALID_HANDLE_VALUE) {
-			return 0;
-		}
-
-		PROCESSENTRY32W Entry = {};
-		Entry.dwSize = sizeof(decltype(Entry));
-		DWORD PID = 0;
-
-		if (!Process32First(Snapshot, &Entry)) {
-			CloseHandle(Snapshot);
-			return 0;
-		}
-
-		do {
-			if (_wcsicmp(Entry.szExeFile, ProcessName) == 0) {
-				PID = Entry.th32ProcessID;
-				break;
-			}
-		} while (Process32Next(Snapshot, &Entry));
-
-		CloseHandle(Snapshot);
-		return PID;
-	}
-
-	std::uintptr_t GetModuleBase(const wchar_t* ModuleName) {
+	std::uintptr_t GetModuleBase(const wchar_t* ModuleName) const {
 		std::uintptr_t ModuleBase = 0;
 
 		HANDLE Snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, m_ProcessID);
@@ -116,7 +121,7 @@ public:
 	}
 
 
-	bool InForeground(const std::string& WindowName) {
+	bool InForeground(const std::string& WindowName) const {
 		HWND Current = GetForegroundWindow();
 
 		if (!Current) return false;
