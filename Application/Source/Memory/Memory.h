@@ -1,7 +1,7 @@
 #ifndef MEMORY
 #define MEMORY
 
-#include "../../../Driver/Source/Driver.h"
+#include "Driver.h"
 #include "../Logger/Logger.h"
 
 class MemoryManager {
