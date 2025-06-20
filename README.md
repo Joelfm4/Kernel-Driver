@@ -3,6 +3,11 @@
 ## Overview
 A kernel-mode driver designed for low-level interaction with a game, providing essential functionalities such as attaching to a target process, reading virtual memory, and writing virtual memory.
 
+## TODO
+- Custom IoCreateDriver
+- Direct Kernel Object Manipulation
+- PatchGuard Bypass
+- System Thread Protection
 
 ## Download and Setup
 0. Disable secure-boot and go to `Windows Security-> Device Security-> Core Isotation` and disable all options
