@@ -3,12 +3,6 @@
 ## Overview
 A kernel-mode driver designed for low-level interaction with a game, providing essential functionalities such as attaching to a target process, reading virtual memory, and writing virtual memory.
 
-## TODO
-- Custom IoCreateDriver
-- Direct Kernel Object Manipulation
-- PatchGuard Bypass
-- System Thread Protection
-
 ## Download and Setup
 0. Disable secure-boot and go to `Windows Security-> Device Security-> Core Isotation` and disable all options
 
@@ -74,7 +68,4 @@ A kernel-mode driver designed for low-level interaction with a game, providing e
 - `ClearFlag(DeviceObject->Flags, DO_DEVICE_INITIALIZING);` – Clears the DO_DEVICE_INITIALIZING flag, indicating that the device object has finished initialization and is ready for I/O operations.
 
 > [!CAUTION]
-> The driver is still under development and may be unstable. It is strongly recommended to test in a virtual machine and use WinDbg for debugging to avoid potential harm to your main system.
-
-> [!WARNING]
-> The driver will only work on Windows
+> This project is currently under active development and is still missing some features.
