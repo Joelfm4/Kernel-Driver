@@ -4,7 +4,7 @@
 namespace Log {
 	const HANDLE Console = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	inline void Info(std::string Ctx) {
+	inline void Info(const std::string& Ctx) {
 		SetConsoleTextAttribute(Console, 0x9);
 		std::cout << "[Info] ";
 
@@ -12,7 +12,7 @@ namespace Log {
 		std::cout << Ctx << '\n';
 	}
 
-	inline void Fine(std::string Ctx) {
+	inline void Fine(const std::string& Ctx) {
 		SetConsoleTextAttribute(Console, 0xA);
 		std::cout << "[Fine] ";
 
@@ -20,7 +20,7 @@ namespace Log {
 		std::cout << Ctx << '\n';
 	}
 
-	inline void Warn(std::string Ctx) {
+	inline void Warn(const std::string& Ctx) {
 		SetConsoleTextAttribute(Console, 0x6);
 		std::cout << "[Warn] ";
 
@@ -28,7 +28,7 @@ namespace Log {
 		std::cout << Ctx << '\n';
 	}
 
-	inline void Error(std::string Ctx, bool Fatal = true) {
+	inline void Error(const std::string& Ctx, bool Fatal = true) {
 		SetConsoleTextAttribute(Console, 0x4);
 		std::cout << "[Error] ";
 
