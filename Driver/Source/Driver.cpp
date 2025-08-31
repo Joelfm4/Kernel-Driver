@@ -1,5 +1,7 @@
 #include <ntifs.h>
+
 #include "Driver.h"
+
 
 extern "C" {
 	NTKERNELAPI NTSTATUS IoCreateDriver(
@@ -21,12 +23,14 @@ extern "C" {
 
 
 void DebugPrint(PCSTR Text) {
+
 #ifndef DEBUG
 	UNREFERENCED_PARAMETER(Text);
 #endif // DEBUG
 
 	KdPrintEx((DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, Text));
 }
+
 
 // Forward declaration for suppressing code analysis warnings.
 DRIVER_INITIALIZE DriverEntry;
@@ -44,6 +48,7 @@ NTSTATUS Create(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 	return Irp->IoStatus.Status;
 }
 
+
 NTSTATUS Close(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 	UNREFERENCED_PARAMETER(DeviceObject);
 
@@ -54,6 +59,7 @@ NTSTATUS Close(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 
 	return Irp->IoStatus.Status;
 }
+
 
 NTSTATUS DeviceControl(PDEVICE_OBJECT DeviceObject, PIRP Irp) {
 	UNREFERENCED_PARAMETER(DeviceObject);
@@ -122,6 +128,7 @@ void DriverUnload(IN PDRIVER_OBJECT DeviceObject) {
 
 }
 
+
 NTSTATUS DriverMain(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryPath) {
 	UNREFERENCED_PARAMETER(RegistryPath);
 
@@ -162,6 +169,7 @@ NTSTATUS DriverMain(IN PDRIVER_OBJECT DriverObject, IN PUNICODE_STRING RegistryP
 
 	return Status;
 }
+
 
 NTSTATUS DriverEntry() {
 	DebugPrint("[+] Debuging ... \n");

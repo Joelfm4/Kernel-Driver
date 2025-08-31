@@ -1,5 +1,5 @@
-#ifndef LOG
-#define LOG
+#pragma once
+
 
 namespace Log {
 	const HANDLE Console = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -44,4 +44,3 @@ namespace Log {
 };
 
 
-#endif // !LOG

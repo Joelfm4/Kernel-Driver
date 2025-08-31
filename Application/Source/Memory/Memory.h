@@ -1,59 +1,20 @@
-#ifndef MEMORY
-#define MEMORY
+#pragma once
+
+#include <TlHelp32.h>
 
 #include "Driver.h"
 #include "../Logger/Logger.h"
 
+
+
 class MemoryManager {
-private:
-	HANDLE m_KernelDriver = INVALID_HANDLE_VALUE;
-	DWORD m_ProcessID = 0;
-	bool m_IsAttached = false;
-
-
-private:
-	DWORD GetProcessID(const wchar_t* ProcessName) {
-
-		HANDLE Snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
-		if (Snapshot == INVALID_HANDLE_VALUE) {
-			return 0;
-		}
-
-		PROCESSENTRY32W Entry = {};
-		Entry.dwSize = sizeof(decltype(Entry));
-		DWORD PID = 0;
-
-		if (!Process32First(Snapshot, &Entry)) {
-			CloseHandle(Snapshot);
-			return 0;
-		}
-
-		do {
-			if (_wcsicmp(Entry.szExeFile, ProcessName) == 0) {
-				PID = Entry.th32ProcessID;
-				break;
-			}
-		} while (Process32Next(Snapshot, &Entry));
-
-		CloseHandle(Snapshot);
-		return PID;
-	}
-
-
-	bool AttachToProcess(const DWORD PID) {
-		Driver::Request r;
-		r.ProcessID = reinterpret_cast<HANDLE>(PID);
-
-		return DeviceIoControl(m_KernelDriver, Driver::Codes::Attach, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
-	}
-
-
-	bool IsDriverLoaded() const {
-		return m_KernelDriver != INVALID_HANDLE_VALUE;
-	}
-
 
 public:
+
+	// ----------------------------------------------------------------- //
+	//                     Constructor & Destructor                      //
+	// ----------------------------------------------------------------- //
+
 	MemoryManager(const wchar_t* ProcessName) {
 		m_KernelDriver = CreateFileW(L"\\\\.\\Driver", GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
@@ -76,20 +37,51 @@ public:
 		m_IsAttached = true;
 	};
 
+
 	~MemoryManager() {
 		if (m_KernelDriver != INVALID_HANDLE_VALUE) {
 			CloseHandle(m_KernelDriver);
 		}
 	};
 
+
 	MemoryManager(const MemoryManager&) = delete;
 	MemoryManager& operator=(const MemoryManager&) = delete;
 
 
-	bool IsAttached() const {
-		return m_IsAttached;
+	// ----------------------------------------------------------------- //
+	//                        Read & Write Methods                       //
+	// ----------------------------------------------------------------- //
+
+	template <class T>
+	T ReadMemory(const std::uintptr_t ADDR) {
+		T temp = {};
+
+		Driver::Request r;
+		r.Target = reinterpret_cast<PVOID>(ADDR);
+		r.Buffer = &temp;
+		r.Size = sizeof(T);
+
+		DeviceIoControl(m_KernelDriver, Driver::Codes::Read, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+
+		return temp;
 	}
 
+
+	template <class T>
+	void WriteMemory(const std::uintptr_t ADDR, const T& Value) {
+		Driver::Request r;
+		r.Target = reinterpret_cast<PVOID>(ADDR);
+		r.Buffer = (PVOID)&Value;
+		r.Size = sizeof(T);
+
+		DeviceIoControl(m_KernelDriver, Driver::Codes::Write, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+	}
+
+
+	// ----------------------------------------------------------------- //
+	//                         Module Utilities                          //
+	// ----------------------------------------------------------------- //
 
 	std::uintptr_t GetModuleBase(const wchar_t* ModuleName) const {
 		std::uintptr_t ModuleBase = 0;
@@ -135,31 +127,60 @@ public:
 	}
 
 
-	template <class T>
-	T ReadMemory(const std::uintptr_t ADDR) {
-		T temp = {};
-
-		Driver::Request r;
-		r.Target = reinterpret_cast<PVOID>(ADDR);
-		r.Buffer = &temp;
-		r.Size = sizeof(T);
-
-		DeviceIoControl(m_KernelDriver, Driver::Codes::Read, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
-
-		return temp;
+	bool IsAttached() const {
+		return m_IsAttached;
 	}
 
 
-	template <class T>
-	void WriteMemory(const std::uintptr_t ADDR, const T& Value) {
-		Driver::Request r;
-		r.Target = reinterpret_cast<PVOID>(ADDR);
-		r.Buffer = (PVOID)&Value;
-		r.Size = sizeof(T);
 
-		DeviceIoControl(m_KernelDriver, Driver::Codes::Write, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+private:
+
+	DWORD GetProcessID(const wchar_t* ProcessName) {
+
+		HANDLE Snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+		if (Snapshot == INVALID_HANDLE_VALUE) {
+			return 0;
+		}
+
+		PROCESSENTRY32W Entry = {};
+		Entry.dwSize = sizeof(decltype(Entry));
+		DWORD PID = 0;
+
+		if (!Process32First(Snapshot, &Entry)) {
+			CloseHandle(Snapshot);
+			return 0;
+		}
+
+		do {
+			if (_wcsicmp(Entry.szExeFile, ProcessName) == 0) {
+				PID = Entry.th32ProcessID;
+				break;
+			}
+		} while (Process32Next(Snapshot, &Entry));
+
+		CloseHandle(Snapshot);
+		return PID;
 	}
+
+
+	bool AttachToProcess(const DWORD PID) {
+		Driver::Request r;
+		r.ProcessID = ULongToHandle(PID);
+
+		return DeviceIoControl(m_KernelDriver, Driver::Codes::Attach, &r, sizeof(r), &r, sizeof(r), nullptr, nullptr);
+	}
+
+
+	bool IsDriverLoaded() const {
+		return m_KernelDriver != INVALID_HANDLE_VALUE;
+	}
+
+
+
+private:
+	HANDLE m_KernelDriver { INVALID_HANDLE_VALUE };
+	DWORD m_ProcessID { 0 };
+	bool m_IsAttached { false };
 
 };
 
-#endif // !MEMORY
